@@ -1,66 +1,38 @@
-def is_operator(token):
-    operators = [
-        '+', '-', '*', '/', '//', '%', '**',
-        '==', '!=', '<', '>', '<=', '>=',
-        '=', '+=', '-=', '*=', '/=', '//=', '%=', '**=',
-        '&=', '|=', '^=', '>>=', '<<=',
-        'and', 'or', 'not',
-        '&', '|', '^', '~', '<<', '>>',
-        'in', 'not in',
-        'is', 'is not',
-        'if', 'else',
-        ':='
-    ]
-    return token in operators
-
 def lexical_analyzer(input_string):
     results = []
     i = 0
-    operators = [
+    sym_ops = [
         '//=', '**=', '>>=', '<<=', '//', '**', '==', '!=', '<=', '>=',
         '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<', '>>',
-        '+', '-', '*', '/', '%', '=', '<', '>', '&', '|', '^', '~', ':'
+        '+', '-', '*', '/', '%', '=', '<', '>', '&', '|', '^', '~', ':', ':='
     ]
-    operators.sort(key=len, reverse=True)
+    keywords = {
+        'and', 'or', 'not', 'in', 'is', 'if', 'else', 'elif', 'return', 'yield'
+    }
+    sym_ops.sort(key=len, reverse=True)
+    
     while i < len(input_string):
-        char = input_string[i]
-        if char.isspace():
-            i += 1
-            continue
-
-        if char in ('"', "'"):
-            quote = char
-            token = char
-            i += 1
-            while i < len(input_string) and input_string[i] != quote:
-                token += input_string[i]
-                i += 1
-            if i < len(input_string):
-                token += input_string[i]
-                i += 1
-            results.append(f"'{token}' -> Not an Operator")
-            continue
-
-        matched = False
-        for op in operators:
-            if input_string[i:i+len(op)] == op:
+        if input_string[i].isspace(): i += 1; continue
+        
+        if input_string[i] in ('"', "'"):
+            end = input_string.find(input_string[i], i + 1)
+            end = len(input_string) if end == -1 else end + 1
+            results.append(f"'{input_string[i:end]}' -> Not an Operator")
+            i = end; continue
+            
+        for op in sym_ops:
+            if input_string.startswith(op, i):
                 results.append(f"'{op}' -> Valid Operator")
-                i += len(op)
-                matched = True
-                break
-        if not matched:
-            token = ''
-            while i < len(input_string) and (input_string[i].isalnum() or input_string[i] == '_'):
-                token += input_string[i]
-                i += 1            
-            if token:
-                if is_operator(token):
-                    results.append(f"'{token}' -> Valid Operator")
-                else:
-                    results.append(f"'{token}' -> Not an Operator")
-            else:
-                results.append(f"'{input_string[i]}' -> Not an Operator")
-                i += 1    
+                i += len(op); break
+        else:
+            start = i
+            while i < len(input_string) and (input_string[i].isalnum() or input_string[i] == '_'): i += 1
+            if i == start: i += 1
+            token = input_string[start:i]
+            
+            if token in keywords: results.append(f"'{token}' -> Valid Operator")
+            elif token in sym_ops: results.append(f"'{token}' -> Valid Operator")
+            
     return results
 
 input_str = input("Enter tokens separated by spaces: ")
