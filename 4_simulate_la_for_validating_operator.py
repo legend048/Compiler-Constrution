@@ -27,6 +27,20 @@ def lexical_analyzer(input_string):
         if char.isspace():
             i += 1
             continue
+
+        if char in ('"', "'"):
+            quote = char
+            token = char
+            i += 1
+            while i < len(input_string) and input_string[i] != quote:
+                token += input_string[i]
+                i += 1
+            if i < len(input_string):
+                token += input_string[i]
+                i += 1
+            results.append(f"'{token}' -> Not an Operator")
+            continue
+
         matched = False
         for op in operators:
             if input_string[i:i+len(op)] == op:
