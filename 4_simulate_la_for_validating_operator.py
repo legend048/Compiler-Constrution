@@ -35,7 +35,7 @@ def lexical_analyzer(input_string):
             
     return results
 
-input_str = input("Enter tokens separated by spaces: ")
+input_str = input("Enter Statement: ")
 result = lexical_analyzer(input_str)
 print("Analysis Results:")
 print(*result, sep='\n')
