@@ -32,6 +32,7 @@ def lexical_analyzer(input_string):
             
             if token in keywords: results.append(f"'{token}' -> Valid Operator")
             elif token in sym_ops: results.append(f"'{token}' -> Valid Operator")
+            else: results.append(f"'{token}' -> Not a Valid Operator")
             
     return results
 
