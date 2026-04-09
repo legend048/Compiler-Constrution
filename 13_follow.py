@@ -1,28 +1,4 @@
-def compute_first(grammar):
-    first = {nt: set() for nt in grammar}
-    eps = 'ε'
-    changed = True
-    while changed:
-        changed = False
-        for nt, productions in grammar.items():
-            for prod in productions:
-                if prod == [eps]:
-                    if eps not in first[nt]:
-                        first[nt].add(eps)
-                        changed = True
-                else:
-                    for symbol in prod:
-                        if symbol in grammar:
-                            first[nt] |= {x for x in first[symbol] if x != eps}
-                            if eps not in first[symbol]:
-                                break
-                        else:
-                            first[nt].add(symbol)
-                            break
-                    else:
-                        first[nt].add(eps)
-                        changed = True
-    return first
+from First_12 import compute_first
 
 def compute_follow(grammar, start):
     first = compute_first(grammar)
@@ -37,17 +13,21 @@ def compute_follow(grammar, start):
                 for i, symbol in enumerate(prod):
                     if symbol in grammar:
                         beta = prod[i + 1:]
-                        beta_first = set()
-                        if beta:
-                            if beta[0] in grammar:
-                                beta_first = {x for x in first[beta[0]] if x != eps}
+                        before = follow[symbol].copy()
+                        for b in beta:
+                            if b in grammar:
+                                follow[symbol] |= {x for x in first[b] if x != eps}
+                                if eps not in first[b]:
+                                    break
                             else:
-                                beta_first.add(beta[0])
-                        
-                        follow[symbol] |= beta_first
-                        if not beta or all(eps in first.get(s, set()) for s in beta
-                                          if s in grammar):
+                                follow[symbol].add(b)
+                                break
+                        else:
                             follow[symbol] |= follow[nt]
+
+                        if not beta:
+                            follow[symbol] |= follow[nt]
+                        if follow[symbol] != before:
                             changed = True
     return follow
 
