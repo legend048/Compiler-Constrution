@@ -3,32 +3,32 @@ from First_12 import compute_first
 def compute_follow(grammar, start):
     first = compute_first(grammar)
     follow = {nt: set() for nt in grammar}
-    eps = 'ε'
     follow[start].add('$')
+    eps = 'ε'
     changed = True
     while changed:
         changed = False
         for nt, productions in grammar.items():
             for prod in productions:
-                for i, symbol in enumerate(prod):
-                    if symbol in grammar:
-                        beta = prod[i + 1:]
-                        before = follow[symbol].copy()
-                        for b in beta:
-                            if b in grammar:
-                                follow[symbol] |= {x for x in first[b] if x != eps}
-                                if eps not in first[b]:
-                                    break
-                            else:
-                                follow[symbol].add(b)
+                for i, sym in enumerate(prod):
+                    if sym not in grammar:
+                        continue
+                    before = len(follow[sym])
+                    beta = prod[i + 1:]
+                    nullable = True
+                    for b in beta:
+                        if b in grammar:
+                            follow[sym] |= {x for x in first[b] if x != eps}
+                            if eps not in first[b]:
+                                nullable = False
                                 break
                         else:
-                            follow[symbol] |= follow[nt]
-
-                        if not beta:
-                            follow[symbol] |= follow[nt]
-                        if follow[symbol] != before:
-                            changed = True
+                            follow[sym].add(b)
+                            nullable = False
+                            break
+                    if not beta or nullable:
+                        follow[sym] |= follow[nt]
+                    changed |= len(follow[sym]) != before
     return follow
 
 grammar = {
@@ -40,16 +40,14 @@ grammar = {
 }
 
 print("Grammar:")
-for nt in sorted(grammar.keys()):
-    prod_str = " | ".join([" ".join(p) for p in grammar[nt]])
-    print(f"{nt} → {prod_str}")
+for nt in sorted(grammar):
+    print(f"{nt} → {' | '.join(' '.join(prod) for prod in grammar[nt])}")
 
 first = compute_first(grammar)
-print("\nFIRST Sets:")
-for nt in sorted(first.keys()):
-    print(f"{nt}: {{{', '.join(sorted(first[nt]))}}}")
-
 follow = compute_follow(grammar, 'E')
+print("\nFIRST Sets:")
+for nt in sorted(first):
+    print(f"{nt}: {{{', '.join(sorted(first[nt]))}}}")
 print("\nFOLLOW Sets:")
-for nt in sorted(follow.keys()):
+for nt in sorted(follow):
     print(f"{nt}: {{{', '.join(sorted(follow[nt]))}}}")
